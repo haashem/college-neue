@@ -30,6 +30,16 @@ class _CreateCollegePhotoPageState extends State<CreateCollegePhotoPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    model.bindMainView();
+
+    model.photosCount.addListener(() {
+      updateUI(model.photosCount.value);
+    });
+  }
+
+  @override
   void dispose() {
     model.dispose();
     super.dispose();
@@ -76,11 +86,11 @@ class _CreateCollegePhotoPageState extends State<CreateCollegePhotoPage> {
                   },
                 ),
                 ElevatedButton(
-                  onPressed: model.clear,
+                  onPressed: clearIsEnabled ? model.clear : null,
                   child: const Text('Clear'),
                 ),
                 ElevatedButton(
-                  onPressed: model.save,
+                  onPressed: saveIsEnabled ? model.save : null,
                   child: const Text('Save'),
                 ),
               ],
