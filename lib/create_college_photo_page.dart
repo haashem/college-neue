@@ -53,7 +53,16 @@ class _CreateCollegePhotoPageState extends State<CreateCollegePhotoPage> {
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
-              onPressed: model.add,
+              onPressed: () {
+                model.add();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => PhotoGalleryPage(
+                      model: model,
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),

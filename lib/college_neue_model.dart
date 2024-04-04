@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:college_neue/utilties/image_college.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'dart:ui' as ui;
 
@@ -32,12 +31,11 @@ class CollegeNeueModel {
   Future<void> add() async {
     assert(canvasSize != Size.zero,
         'Canvas size must be set before adding images');
-    final byteData = await rootBundle.load('assets/IMG_1907.jpg');
-    final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());
-    final frameInfo = await codec.getNextFrame();
-    final newImage = frameInfo.image;
-
-    _images.add(_images.value..add(newImage));
+    selectedPhotosSubject = PublishSubject<ui.Image>();
+    final newPhotosSubscriptions = selectedPhotosSubject.stream
+        .map((image) => _images.value + [image])
+        .listen(_images.add);
+    _subscriptions.add(newPhotosSubscriptions);
   }
 
   void clear() {
@@ -53,7 +51,17 @@ class CollegeNeueModel {
   }
 
   // Displaying photos picker
-  Stream<List<AssetEntity>> get photos => const Stream.empty();
+  var selectedPhotosSubject = PublishSubject<ui.Image>();
+  final _photos = PublishSubject<List<AssetEntity>>();
+  Stream<List<AssetEntity>> get photos => _photos.stream;
+
+  void bindPhotoPicker() {
+    loadPhotos().then((items) => _photos.add(items));
+  }
+
+  void unbindPhotoPicker() {
+    selectedPhotosSubject.close();
+  }
 
   Future<List<AssetEntity>> loadPhotos() async {
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
@@ -71,5 +79,13 @@ class CollegeNeueModel {
     }
   }
 
-  void selectImage(AssetEntity asset) {}
+  void selectImage(AssetEntity asset) {
+    asset.file.then((file) async {
+      final byteData = await file!.readAsBytes();
+      final codec = await ui.instantiateImageCodec(byteData);
+      final frameInfo = await codec.getNextFrame();
+      final image = frameInfo.image;
+      selectedPhotosSubject.add(image);
+    });
+  }
 }
