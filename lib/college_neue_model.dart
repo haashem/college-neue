@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:college_neue/utilties/image_college.dart';
+import 'package:college_neue/utilties/photo_writer.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'dart:ui' as ui;
@@ -42,7 +43,24 @@ class CollegeNeueModel {
     _images.add([]);
   }
 
-  void save() {}
+  final _savedPhotoIdSubject = PublishSubject<String>();
+  Stream<String> get savedPhotoId => _savedPhotoIdSubject.stream;
+
+  void save() {
+    final collegeImage = previewImage.value;
+    if (collegeImage == null) {
+      return;
+    }
+
+    final subscription = PhotoWriter.save(collegeImage)
+    .asStream()
+    .listen((id) {
+      _savedPhotoIdSubject.add(id);
+      clear();
+    }, onError: _savedPhotoIdSubject.addError);
+
+    _subscriptions.add(subscription);
+  }
 
   void dispose() {
     previewImage.dispose();

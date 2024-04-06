@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:college_neue/college_neue_model.dart';
@@ -33,15 +34,27 @@ class _CreateCollegePhotoPageState extends State<CreateCollegePhotoPage> {
   void initState() {
     super.initState();
     model.bindMainView();
-
     model.photosCount.addListener(() {
       updateUI(model.photosCount.value);
+    });
+
+    listenToPhotoSaveResult(model);
+  }
+
+  StreamSubscription<String>? savedPhotoIdSubscription;
+  void listenToPhotoSaveResult(CollegeNeueModel model) {
+    savedPhotoIdSubscription = model.savedPhotoId.listen((id) {
+      showAlertDialog(context,
+          title: 'Success', message: 'Photo saved with ID: $id');
+    }, onError: (error) {
+      showAlertDialog(context, title: 'Error', message: error.toString());
     });
   }
 
   @override
   void dispose() {
     model.dispose();
+    savedPhotoIdSubscription?.cancel();
     super.dispose();
   }
 
