@@ -34,6 +34,7 @@ class CollegeNeueModel {
         'Canvas size must be set before adding images');
     selectedPhotosSubject = PublishSubject<ui.Image>();
     final newPhotosSubscriptions = selectedPhotosSubject.stream
+        .takeWhile((element) => _images.value.length < 6)
         .map((image) => _images.value + [image])
         .listen(_images.add);
     _subscriptions.add(newPhotosSubscriptions);
